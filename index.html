@@ -1,0 +1,811 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trivikram N — AI &amp; CS Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --bg: #020d1a;
+  --gold: #ffc200;
+  --red: #ff4d1a;
+  --orange: #ff8c00;
+  --dim: #888;
+  --border: rgba(255,100,20,.18);
+  --card: rgba(0,30,80,.25);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: #fff; font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  height: 64px; padding: 0 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(2,10,24,.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 26px;
+  letter-spacing: 4px; color: var(--gold); text-decoration: none;
+  text-shadow: 0 0 20px rgba(255,194,0,.35);
+}
+.nav-links { display: flex; gap: 24px; list-style: none; align-items: center; }
+.nav-links a {
+  color: rgba(255,255,255,.5); text-decoration: none;
+  font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase;
+  font-family: 'Space Mono', monospace; transition: color .2s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-cta {
+  background: transparent; border: 1px solid var(--gold); color: var(--gold);
+  padding: 8px 20px; font-family: 'Space Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase; cursor: none;
+  border-radius: 2px; transition: all .3s; margin-left: 8px;
+}
+.nav-cta:hover { background: var(--gold); color: #000; }
+
+/* ─── HERO ─── */
+#hero {
+  position: relative; width: 100%; height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+#hero-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+}
+.hero-content {
+  position: absolute; z-index: 2; text-align: center;
+  bottom: 110px; left: 50%; transform: translateX(-50%);
+  width: 100%;
+}
+.hero-tag {
+  font-family: 'Space Mono', monospace; font-size: 11px;
+  letter-spacing: 5px; color: var(--gold); text-transform: uppercase;
+  margin-bottom: 14px; opacity: .75;
+}
+.hero-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 12vw, 160px);
+  line-height: .88; letter-spacing: 6px;
+  background: linear-gradient(135deg, #fff 25%, var(--gold) 62%, var(--red) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: 15px; color: rgba(255,200,100,.5);
+  margin-top: 18px; letter-spacing: 1.2px; font-weight: 300;
+}
+
+/* ─── AI TRIGGER BOX ─── */
+/* A glowing box anchored at bottom-center near the scroll edge.
+   Always visible. Hovering it reveals the AI letter grid on canvas. */
+.ai-trigger {
+  position: absolute; z-index: 3;
+  bottom: 28px; left: 50%; transform: translateX(-50%);
+  width: 64px; height: 64px;
+  border: 1px solid rgba(255,194,0,.45);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  background: rgba(255,100,0,.06);
+  transition: border-color .3s, background .3s;
+  overflow: visible;
+}
+.ai-trigger:hover,
+.ai-trigger.active {
+  border-color: var(--gold);
+  background: rgba(255,180,0,.12);
+  box-shadow: 0 0 24px rgba(255,180,0,.3), 0 0 60px rgba(255,100,0,.12);
+}
+.ai-trigger-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 3px;
+  color: rgba(255,194,0,.7);
+  pointer-events: none;
+  transition: color .3s;
+}
+.ai-trigger:hover .ai-trigger-label,
+.ai-trigger.active .ai-trigger-label {
+  color: var(--gold);
+  text-shadow: 0 0 12px rgba(255,200,0,.8);
+}
+.ai-trigger-glow {
+  position: absolute; inset: -1px;
+  border-radius: 6px;
+  background: transparent;
+  pointer-events: none;
+  animation: triggerPulse 2.5s ease-in-out infinite;
+}
+@keyframes triggerPulse {
+  0%,100% { box-shadow: 0 0 0px rgba(255,180,0,0); }
+  50%      { box-shadow: 0 0 18px rgba(255,180,0,.25), 0 0 40px rgba(255,100,0,.1); }
+}
+@keyframes scrollpulse { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+/* ─── SHARED SECTIONS ─── */
+section {
+  min-height: 100vh; display: flex; align-items: center;
+  justify-content: center; padding: 120px 64px; position: relative;
+}
+.sec-inner { max-width: 1100px; width: 100%; }
+.sec-label {
+  font-family: 'Space Mono', monospace; font-size: 10px;
+  letter-spacing: 5px; color: var(--gold); text-transform: uppercase;
+  margin-bottom: 12px; opacity: .65;
+}
+.sec-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(46px, 5.5vw, 88px);
+  line-height: 1; margin-bottom: 48px;
+  background: linear-gradient(90deg, #fff 55%, var(--gold));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* ─── ABOUT ─── */
+#about { background: transparent; overflow: hidden; }
+#about::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 80% 50%, rgba(0,60,180,.12) 0%, transparent 70%); pointer-events:none; }
+#about::after { content:''; position:absolute; top:-100px; left:-100px; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle,rgba(255,194,0,.03) 0%,transparent 70%); pointer-events:none; animation:aboutOrb 8s ease-in-out infinite; }
+@keyframes aboutOrb { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.about-text { font-size: 18px; line-height: 2; color: rgba(255,255,255,.72); font-weight: 300; }
+.about-text em { color: var(--gold); font-style: normal; font-weight: 500; }
+.about-stats { display: flex; gap: 0; margin-top: 48px; }
+.stat { flex: 1; text-align: center; padding: 20px 0; border-right: 1px solid rgba(255,255,255,.06); position:relative; }
+.stat:last-child { border-right: none; }
+.stat::before { content:''; position:absolute; bottom:0; left:15%; right:15%; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); transform:scaleX(0); transition:transform .4s; }
+.stat:hover::before { transform:scaleX(1); }
+.stat-num { font-family:'Bebas Neue',sans-serif; font-size:52px; letter-spacing:2px; background:linear-gradient(135deg,var(--gold),var(--red)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
+.stat-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:rgba(255,255,255,.35); text-transform:uppercase; margin-top:6px; }
+.about-visual { position: relative; height: 360px; }
+.hex { position:absolute; width:64px; height:64px; clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display:flex; align-items:center; justify-content:center; font-size:22px; transition:transform .4s; }
+.hex:hover { transform: scale(1.2) !important; }
+.hex-1 { background:rgba(255,194,0,.14); top:12%; left:46%; animation:hexFloat 4s ease-in-out infinite; }
+.hex-2 { background:rgba(255,77,26,.12); top:0%; left:20%; animation:hexFloat 5s ease-in-out infinite .8s; }
+.hex-3 { background:rgba(0,120,255,.12); top:40%; left:10%; animation:hexFloat 3.5s ease-in-out infinite 1.4s; }
+.hex-4 { background:rgba(255,194,0,.09); top:56%; left:50%; animation:hexFloat 4.5s ease-in-out infinite .3s; }
+.hex-5 { background:rgba(255,77,26,.09); top:26%; left:68%; animation:hexFloat 3.8s ease-in-out infinite 1s; }
+.hex-6 { background:rgba(0,200,120,.09); top:68%; left:26%; animation:hexFloat 4.2s ease-in-out infinite .5s; }
+@keyframes hexFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.about-code-block { position:absolute; bottom:0; right:0; left:8%; background:rgba(2,10,30,.9); border:1px solid rgba(50,120,255,.2); border-radius:12px; padding:20px 24px; font-family:'Space Mono',monospace; font-size:12px; line-height:2; backdrop-filter:blur(12px); box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04); }
+.about-code-block::before { content:'● ● ●'; position:absolute; top:-24px; left:16px; font-size:10px; color:rgba(255,255,255,.15); letter-spacing:4px; }
+.code-line { display:flex; gap:14px; }
+.code-kw { color:#79c0ff; } .code-fn { color:#d2a8ff; } .code-str { color:var(--gold); } .code-dim { color:rgba(255,255,255,.28); }
+
+/* ─── EDUCATION ─── */
+#education { background: transparent; overflow: hidden; }
+#education::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 50% at 20% 50%, rgba(255,100,0,.06) 0%, transparent 70%); pointer-events:none; }
+.edu-timeline { display:flex; flex-direction:column; position:relative; padding-left:40px; max-width:720px; }
+.edu-timeline::before { content:''; position:absolute; left:5px; top:12px; bottom:12px; width:1px; background:linear-gradient(to bottom,transparent,var(--gold) 20%,var(--red) 80%,transparent); }
+.edu-item { display:grid; grid-template-columns:auto 1fr; gap:32px; padding-bottom:48px; align-items:start; }
+.edu-dot { width:11px; height:11px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 4px rgba(255,194,0,.15), 0 0 20px rgba(255,194,0,.5); flex-shrink:0; margin-top:8px; position:relative; z-index:1; }
+.edu-body { background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:30px 36px; transition:all .35s; }
+.edu-body:hover { border-color:rgba(255,194,0,.28); background:rgba(255,194,0,.03); transform:translateX(10px); box-shadow: 0 0 40px rgba(255,194,0,.05); }
+.edu-body-year { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--gold); opacity:.5; margin-bottom:10px; }
+.edu-body-degree { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; line-height:1.1; margin-bottom:10px; }
+.edu-body-spec { display:inline-block; font-size:10px; letter-spacing:1.5px; color:#000; background:linear-gradient(90deg,var(--gold),var(--orange)); padding:4px 14px; border-radius:20px; font-family:'Space Mono',monospace; margin-bottom:14px; font-weight:700; }
+.edu-body-inst { color:rgba(255,255,255,.5); font-size:14px; letter-spacing:.5px; }
+
+/* ─── SKILLS ─── */
+#skills { background: transparent; overflow: hidden; }
+#skills::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 70% 60% at 50% 100%, rgba(0,60,200,.1) 0%, transparent 65%); pointer-events:none; }
+.skills-tags { display:flex; flex-wrap:wrap; gap:10px; }
+.skill-tag { padding:10px 22px; border:1px solid rgba(255,255,255,.08); font-family:'Space Mono',monospace; font-size:11px; letter-spacing:1px; color:rgba(255,255,255,.55); border-radius:40px; background:rgba(255,255,255,.03); transition:all .35s; cursor:default; position:relative; overflow:hidden; }
+.skill-tag::before { content:''; position:absolute; inset:0; border-radius:40px; background:linear-gradient(135deg,rgba(255,194,0,.15),rgba(255,77,26,.1)); opacity:0; transition:opacity .35s; }
+.skill-tag:hover { border-color:rgba(255,194,0,.5); color:var(--gold); transform:translateY(-4px) scale(1.05); box-shadow:0 8px 24px rgba(255,194,0,.1); }
+.skill-tag:hover::before { opacity:1; }
+.skill-blocks { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:52px; }
+.s-block { padding:36px 24px; border:1px solid rgba(255,255,255,.06); border-radius:16px; text-align:center; background:rgba(255,255,255,.02); transition:all .4s; position:relative; overflow:hidden; }
+.s-block::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,194,0,.06),rgba(255,77,26,.04)); opacity:0; transition:opacity .4s; }
+.s-block::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--gold),transparent); transform:scaleX(0); transition:transform .4s; }
+.s-block:hover { border-color:rgba(255,194,0,.22); transform:translateY(-8px); }
+.s-block:hover::before { opacity:1; }
+.s-block:hover::after { transform:scaleX(1); }
+.s-icon { font-size:36px; margin-bottom:14px; display:block; transition:transform .4s; }
+.s-block:hover .s-icon { transform:scale(1.2) rotate(-5deg); }
+.s-name { font-size:11px; color:rgba(255,255,255,.45); letter-spacing:2.5px; font-family:'Space Mono',monospace; text-transform:uppercase; }
+
+/* ─── PROJECTS ─── */
+#projects { background: transparent; overflow:hidden; }
+#projects::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 70% at 50% 50%, rgba(0,40,120,.1) 0%, transparent 70%); pointer-events:none; }
+.proj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.proj-card {
+  border: 1px solid rgba(255,255,255,.07); padding: 40px; border-radius: 16px;
+  background: rgba(255,255,255,.02); position: relative; overflow: hidden;
+  transition: all .4s; text-decoration: none; display: block;
+}
+.proj-card::before { content:''; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg,rgba(255,194,0,.06),rgba(0,80,255,.04)); opacity:0; transition:opacity .4s; }
+.proj-card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); transform:scaleX(0); transform-origin:center; transition:transform .5s; }
+.proj-card:hover { border-color:rgba(255,194,0,.3); transform:translateY(-8px); box-shadow:0 24px 60px rgba(0,0,0,.4), 0 0 0 1px rgba(255,194,0,.08); }
+.proj-card:hover::before { opacity:1; }
+.proj-card:hover::after { transform:scaleX(1); }
+.proj-num { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--gold); opacity:.35; margin-bottom:16px; }
+.proj-name { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; margin-bottom:12px; color:#fff; line-height:1; }
+.proj-desc { color:rgba(255,255,255,.55); font-size:14px; line-height:1.7; margin-bottom:24px; }
+.proj-link { display:inline-flex; align-items:center; gap:8px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; text-decoration:none; padding:8px 18px; border:1px solid rgba(255,194,0,.25); border-radius:30px; transition:all .3s; background:rgba(255,194,0,.04); }
+.proj-link:hover { background:var(--gold); color:#000; border-color:var(--gold); }
+.proj-link svg { width:13px; height:13px; }
+.proj-tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.proj-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px; color:rgba(255,255,255,.35); border:1px solid rgba(255,255,255,.08); padding:3px 10px; border-radius:20px; }
+
+/* ─── EXPERIENCE ─── */
+#experience { background: transparent; overflow: hidden; }
+#experience::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 50% 60% at 80% 30%, rgba(255,50,0,.06) 0%, transparent 70%); pointer-events:none; }
+.exp-card { border:1px solid rgba(255,255,255,.07); padding:52px; border-radius:20px; background:rgba(255,255,255,.02); position:relative; overflow:hidden; }
+.exp-card::before { content:''; position:absolute; top:0; left:0; bottom:0; width:3px; background:linear-gradient(to bottom,var(--gold),var(--red),transparent); border-radius:3px 0 0 3px; }
+.exp-card::after { content:''; position:absolute; top:-80px; right:-80px; width:280px; height:280px; border-radius:50%; background:radial-gradient(circle,rgba(255,194,0,.05) 0%,transparent 70%); pointer-events:none; animation:expOrb 6s ease-in-out infinite; }
+@keyframes expOrb { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-20px,20px) scale(1.1)} }
+.exp-header { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:28px; }
+.exp-org-tag { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:4px; color:var(--gold); opacity:.6; margin-bottom:10px; }
+.exp-role { font-family:'Bebas Neue',sans-serif; font-size:48px; letter-spacing:2px; line-height:1; }
+.exp-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(0,200,100,.08); border:1px solid rgba(0,200,100,.22); color:#4ade80; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; padding:7px 16px; border-radius:20px; white-space:nowrap; }
+.exp-badge::before { content:'●'; font-size:8px; animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.exp-sub { color:rgba(255,194,0,.6); font-family:'Space Mono',monospace; font-size:11px; letter-spacing:3px; margin-bottom:32px; text-transform:uppercase; }
+.exp-list { list-style:none; display:flex; flex-direction:column; gap:12px; }
+.exp-list li { display:flex; gap:16px; color:rgba(255,255,255,.68); font-size:15px; line-height:1.7; padding:16px 20px; border-radius:10px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.04); transition:all .3s; }
+.exp-list li:hover { border-color:rgba(255,194,0,.18); background:rgba(255,194,0,.03); transform:translateX(6px); }
+.exp-list li::before { content:'▸'; color:var(--gold); flex-shrink:0; margin-top:3px; font-size:12px; }
+
+/* ─── CONTACT ─── */
+#contact { min-height:100vh; background:rgba(1,5,18,1); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 48px; position:relative; overflow:hidden; }
+.contact-bg-grid { position:absolute; inset:0; pointer-events:none; opacity:.04; background-image:linear-gradient(rgba(255,194,0,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,194,0,.6) 1px,transparent 1px); background-size:60px 60px; mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%); -webkit-mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%); }
+.c-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(58px,9.5vw,136px); letter-spacing:5px; text-align:center; position:relative; z-index:2; background:linear-gradient(135deg,#fff 25%,var(--gold) 65%,var(--red) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.c-sub { color:rgba(255,255,255,.28); font-size:13px; letter-spacing:3px; margin-top:12px; font-family:'Space Mono',monospace; position:relative; z-index:2; text-align:center; }
+.c-card { position:relative; z-index:2; margin-top:48px; display:inline-flex; align-items:center; gap:14px; padding:20px 40px; border-radius:60px; background:rgba(255,255,255,.03); backdrop-filter:blur(12px); border:1px solid rgba(255,194,0,.15); transition:all .35s; }
+.c-card:hover { border-color:rgba(255,194,0,.4); background:rgba(255,194,0,.05); box-shadow:0 0 40px rgba(255,194,0,.08); }
+.c-email-icon { font-size:18px; }
+.c-email { font-size:17px; font-weight:500; letter-spacing:.5px; }
+.c-copy-btn { margin-left:8px; background:rgba(255,194,0,.08); border:1px solid rgba(255,194,0,.25); color:var(--gold); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; padding:6px 14px; border-radius:20px; cursor:pointer; transition:all .25s; text-transform:uppercase; }
+.c-copy-btn:hover { background:var(--gold); color:#000; }
+
+/* ─── SOCIAL MARQUEE ─── */
+.soc-wrap { width:100%; overflow:hidden; margin-top:68px; position:relative; z-index:2; }
+.soc-wrap::before,.soc-wrap::after { content:''; position:absolute; top:0; bottom:0; width:100px; z-index:1; pointer-events:none; }
+.soc-wrap::before { left:0; background:linear-gradient(90deg,rgba(1,5,18,1),transparent); }
+.soc-wrap::after { right:0; background:linear-gradient(-90deg,rgba(1,5,18,1),transparent); }
+.soc-track { display:flex; gap:16px; width:max-content; animation:marquee 24s linear infinite; }
+.soc-track:hover { animation-play-state:paused; }
+@keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.soc-link { display:flex; align-items:center; gap:10px; padding:12px 22px; border-radius:40px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); transition:all .3s; flex-shrink:0; text-decoration:none; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; color:rgba(255,255,255,.4); }
+.soc-link:hover { border-color:var(--gold); background:rgba(255,194,0,.07); color:var(--gold); transform:translateY(-4px); box-shadow:0 8px 24px rgba(255,194,0,.1); }
+.soc-link svg { width:16px; height:16px; flex-shrink:0; }
+.footer-txt { position:relative; z-index:2; margin-top:60px; color:rgba(255,255,255,.15); font-size:11px; font-family:'Space Mono',monospace; letter-spacing:2px; text-align:center; }
+.footer-txt strong { color:rgba(255,255,255,.4); }
+
+/* ─── REVEAL ANIMATION ─── */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity .75s ease, transform .75s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 820px) {
+  nav { padding: 0 20px; }
+  .nav-links { gap: 14px; }
+  section { padding: 80px 24px; }
+  .about-grid, .edu-grid, .proj-grid { grid-template-columns: 1fr; }
+  .skill-blocks { grid-template-columns: repeat(2,1fr); }
+  .about-visual { height: 260px; }
+}
+</style>
+</head>
+<body>
+
+
+<!-- ══════════════════════ NAV ══════════════════════ -->
+<nav>
+  <ul class="nav-links">
+    <li><a href="#about">About Me</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Let's Talk</button>
+</nav>
+
+<!-- ══════════════════════ HERO ══════════════════════ -->
+<!--
+  LAYOUT (vertical):
+  ┌──────────────────────────────────┐  ← 0%
+  │  TOP GRID ZONE (invisible boxes) │  ← 0–55% height
+  │  (appear only near mouse cursor) │
+  ├──────────────────────────────────┤
+  │       NAME  "Trivikram N"        │  ← centered ~50–65%
+  │    AI Engineer · CS Student...   │
+  │         ↓  Scroll  ↓             │
+  ├──────────────────────────────────┤
+  │  BOTTOM ZONE: "AI" letter grid   │  ← 68–100%
+  │  (gold AI appears near mouse)    │
+  └──────────────────────────────────┘  ← 100%
+-->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-tag">Portfolio</div>
+    <div class="hero-name">Trivikram N</div>
+    <div class="hero-sub">AI Engineer &nbsp;·&nbsp; CS Student &nbsp;·&nbsp; Builder</div>
+  </div>
+  <!-- Special trigger box — visible near scroll, hover to reveal AI grid -->
+  <div class="ai-trigger" id="ai-trigger">
+    <span class="ai-trigger-label">AI</span>
+    <div class="ai-trigger-glow"></div>
+  </div>
+</section>
+
+<!-- ══════════════════════ ABOUT ══════════════════════ -->
+<section id="about">
+  <div class="sec-inner">
+    <div class="about-grid">
+      <div class="reveal">
+        <div class="sec-label">01 — About Me</div>
+        <div class="sec-title">About Me</div>
+        <p class="about-text">
+          <em>Artificial Intelligence &amp; Computer Science</em> student.
+          Specializing in crafting <em>intelligent systems</em> with solid
+          Data Structures &amp; Algorithms fundamentals. Passionate about
+          the intersection of <em>code, creativity, and efficient software</em>.
+        </p>
+        <div class="about-stats">
+          <div class="stat"><div class="stat-num">4+</div><div class="stat-label">Projects</div></div>
+          <div class="stat"><div class="stat-num">3+</div><div class="stat-label">Languages</div></div>
+          <div class="stat"><div class="stat-num">1+</div><div class="stat-label">Years Active</div></div>
+        </div>
+      </div>
+      <div class="about-visual reveal">
+        <div class="hex hex-1">🧠</div>
+        <div class="hex hex-2">⚡</div>
+        <div class="hex hex-3">🔗</div>
+        <div class="hex hex-4">🎯</div>
+        <div class="hex hex-5">🚀</div>
+        <div class="hex hex-6">💡</div>
+        <div class="about-code-block">
+          <div class="code-line"><span class="code-kw">const</span> <span class="code-fn">trivikram</span> <span class="code-dim">= {</span></div>
+          <div class="code-line"><span class="code-dim">&nbsp;&nbsp;role:</span> <span class="code-str">"AI Engineer"</span><span class="code-dim">,</span></div>
+          <div class="code-line"><span class="code-dim">&nbsp;&nbsp;focus:</span> <span class="code-str">"Build &amp; Innovate"</span><span class="code-dim">,</span></div>
+          <div class="code-line"><span class="code-dim">&nbsp;&nbsp;status:</span> <span class="code-str">"Learning∞"</span></div>
+          <div class="code-line"><span class="code-dim">}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ EDUCATION ══════════════════════ -->
+<section id="education">
+  <div class="sec-inner">
+    <div class="reveal">
+      <div class="sec-label">02 — Education</div>
+      <div class="sec-title">Academic Path</div>
+    </div>
+    <div class="edu-timeline">
+      <div class="edu-item reveal">
+        <div class="edu-dot"></div>
+        <div class="edu-body">
+          <div class="edu-body-year">2024 — Present</div>
+          <div class="edu-body-degree">B.Tech in Computer Science &amp; Engineering</div>
+          <div class="edu-body-spec">AI &amp; ML Specialization</div>
+          <div class="edu-body-inst">VIT-AP University</div>
+        </div>
+      </div>
+      <div class="edu-item reveal">
+        <div class="edu-dot"></div>
+        <div class="edu-body">
+          <div class="edu-body-year">2022 — 2024</div>
+          <div class="edu-body-degree">Intermediate (MPC)</div>
+          <div class="edu-body-spec">Mathematics · Physics · Chemistry</div>
+          <div class="edu-body-inst">Narayana Junior College</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ SKILLS ══════════════════════ -->
+<section id="skills">
+  <div class="sec-inner">
+    <div class="reveal">
+      <div class="sec-label">03 — Skills</div>
+      <div class="sec-title">Technical Arsenal</div>
+    </div>
+    <div class="skills-tags reveal">
+      <span class="skill-tag">Artificial Intelligence</span>
+      <span class="skill-tag">Machine Learning</span>
+      <span class="skill-tag">DSA</span>
+      <span class="skill-tag">Python</span>
+      <span class="skill-tag">Java</span>
+      <span class="skill-tag">C++</span>
+      <span class="skill-tag">JavaScript</span>
+      <span class="skill-tag">React</span>
+      <span class="skill-tag">Three.js</span>
+    </div>
+    <div class="skill-blocks">
+      <div class="s-block reveal"><div class="s-icon">🧠</div><div class="s-name">AI / ML</div></div>
+      <div class="s-block reveal"><div class="s-icon">⚙️</div><div class="s-name">Systems &amp; DSA</div></div>
+      <div class="s-block reveal"><div class="s-icon">🎨</div><div class="s-name">Creative Dev</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ PROJECTS ══════════════════════ -->
+<section id="projects">
+  <div class="sec-inner">
+    <div class="reveal">
+      <div class="sec-label">04 — Projects</div>
+      <div class="sec-title">What I've Built</div>
+    </div>
+    <div class="proj-grid">
+
+      <div class="proj-card reveal">
+        <div class="proj-num">01</div>
+        <div class="proj-name">CodeCity</div>
+        <div class="proj-tag-row"><span class="proj-tag">Three.js</span><span class="proj-tag">JavaScript</span><span class="proj-tag">3D</span></div>
+        <div class="proj-desc">An interactive 3D city visualization where every building represents a code repository, making it easy to explore and navigate large codebases spatially.</div>
+        <a class="proj-link" href="https://github.com/nakkatrivikram299-prog/CodeCity" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">02</div>
+        <div class="proj-name">MoodFlow</div>
+        <div class="proj-tag-row"><span class="proj-tag">Python</span><span class="proj-tag">AI/ML</span><span class="proj-tag">React</span></div>
+        <div class="proj-desc">An emotion-aware journaling app that tracks your mood patterns over time and provides AI-driven insights to help improve mental well-being.</div>
+        <a class="proj-link" href="https://github.com/nakkatrivikram299-prog/MoodFlow" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">03</div>
+        <div class="proj-name">SoundBridge</div>
+        <div class="proj-tag-row"><span class="proj-tag">Python</span><span class="proj-tag">NLP</span><span class="proj-tag">Speech API</span></div>
+        <div class="proj-desc">A real-time audio translation bridge that converts spoken language across different tongues, breaking communication barriers with seamless speech processing.</div>
+        <a class="proj-link" href="https://github.com/nakkatrivikram299-prog/SoundBridge" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+      <div class="proj-card reveal">
+        <div class="proj-num">04</div>
+        <div class="proj-name">NexusPM</div>
+        <div class="proj-tag-row"><span class="proj-tag">React</span><span class="proj-tag">AI</span><span class="proj-tag">Dashboard</span></div>
+        <div class="proj-desc">An intelligent project management dashboard powered by AI that automates task prioritization, predicts deadlines, and provides smart team collaboration insights.</div>
+        <a class="proj-link" href="https://github.com/nakkatrivikram299-prog/NexusPM-Intelligent-Project-Management-Dashboard" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ EXPERIENCE ══════════════════════ -->
+<section id="experience">
+  <div class="sec-inner">
+    <div class="reveal">
+      <div class="sec-label">05 — Experience</div>
+      <div class="sec-title">Where I've Worked</div>
+    </div>
+    <div class="exp-card reveal">
+      <div class="exp-header">
+        <div>
+          <div class="exp-org-tag">ACM Student Chapter</div>
+          <div class="exp-role">Creative Department Member</div>
+        </div>
+        <div class="exp-badge">Active · 2024 — Present</div>
+      </div>
+      <div class="exp-sub">Creative Department</div>
+      <ul class="exp-list">
+        <li>Designed high-impact posters and digital assets for major technical events.</li>
+        <li>Spearheaded creative concepts in collaboration with the tech team.</li>
+        <li>Ensured consistent and coherent visual branding across all platforms.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ CONTACT ══════════════════════ -->
+<section id="contact">
+  <div class="contact-bg-grid"></div>
+  <div class="c-title reveal">LET'S CONNECT</div>
+  <p class="c-sub reveal">Open for collaborations, projects &amp; conversations</p>
+  <div class="c-card reveal">
+    <span class="c-email-icon">✉️</span>
+    <span class="c-email">nakkatrivikram299&#64;gmail.com</span>
+    <button class="c-copy-btn" onclick="navigator.clipboard.writeText('nakkatrivikram299@gmail.com').then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)})">Copy</button>
+  </div>
+  <div class="soc-wrap reveal">
+    <div class="soc-track" id="soc-track"></div>
+  </div>
+  <p class="footer-txt">&#169; 2026 &#8212; All rights reserved | Made by <strong>Trivikram</strong></p>
+</section>
+
+
+<script>
+/* ════════════════════════════════════════
+   HERO CANVAS
+   Layout:
+   - TOP ZONE  (y: 64px → 52% H): plain boxes, invisible until hovered
+   - NAME sits at center (CSS handled)
+   - BOTTOM ZONE (y: 65% H → 95% H): AI letter grid, invisible until hovered
+════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H;
+  // Mouse starts off-screen so nothing shows until user moves mouse
+  let mouse = { x: -9999, y: -9999 };
+  let mouseActive = false;
+
+  document.addEventListener('mousemove', e => {
+    mouseActive = true;
+    const r = canvas.getBoundingClientRect();
+    mouse = { x: e.clientX - r.left, y: e.clientY - r.top };
+  });
+  document.addEventListener('mouseleave', () => {
+    mouseActive = false;
+    mouse = { x: -9999, y: -9999 };
+  });
+
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ── Shared iso constants ── */
+  const ISO_X = 0.866, ISO_Y = 0.5;
+
+  /* ── PLAIN PROXIMITY GRID: 8 rows × 20 cols ──
+     Invisible boxes that appear only when mouse moves near them */
+  const TCS = 32, TGAP = 6, TDEPTH = 32 * 0.28;
+  const TROWS = 8, TCOLS = 20, TPROX = 150;
+
+  /* ── AI GRID: "A" + "I" letters — 9 rows × 18 cols ──
+     A = cols 0-7,  gap = cols 8-9,  I = cols 10-17    */
+  const AI_GRID = [
+  //   0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
+    [  0, 0, 0, 1, 1, 0, 0, 0, 0, 0,  1, 1, 1, 1, 1, 1, 1, 0 ],
+    [  0, 0, 1, 1, 1, 1, 0, 0, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  0, 1, 1, 0, 0, 1, 1, 0, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 0, 0, 0, 0, 1, 1, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 1, 1, 1, 1, 1, 1, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 1, 1, 1, 1, 1, 1, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 0, 0, 0, 0, 1, 1, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 0, 0, 0, 0, 1, 1, 0, 0,  0, 0, 1, 1, 1, 0, 0, 0 ],
+    [  1, 1, 0, 0, 0, 0, 1, 1, 0, 0,  1, 1, 1, 1, 1, 1, 1, 0 ],
+  ];
+  const AROWS = AI_GRID.length, ACOLS = AI_GRID[0].length;
+  const ACS = 28, AGAP = 5, ADEPTH = 28 * 0.28;
+
+  /* ── Trigger box hover state ── */
+  const triggerEl = document.getElementById('ai-trigger');
+  let triggerHovered = false;
+  triggerEl.addEventListener('mouseenter', () => { triggerHovered = true;  triggerEl.classList.add('active'); });
+  triggerEl.addEventListener('mouseleave', () => { triggerHovered = false; triggerEl.classList.remove('active'); });
+
+  /* ── Floating dust particles ── */
+  const DUST = Array.from({ length: 130 }, () => ({
+    x: Math.random(), y: Math.random(),
+    r: Math.random() * 0.9 + 0.15,
+    a: Math.random() * 0.18 + 0.03,
+    s: Math.random() * 0.00012 + 0.00003,
+    warm: Math.random() > 0.5
+  }));
+
+  /* ── Animated reveal alpha for AI grid (smooth fade in/out) ── */
+  let aiAlphaScale = 0; // 0 = hidden, 1 = fully visible
+
+  /* ── Draw a plain proximity cube (red wire, faint) ── */
+  function drawPlain(cx, cy, cs, depth, alpha) {
+    const h = cs * ISO_Y, w = cs * ISO_X;
+    const bob = Math.sin(Date.now() * 0.001 + (cx + cy) * 0.011) * 3 * alpha;
+    const y0 = cy - bob;
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(cx,y0-depth); ctx.lineTo(cx+w,y0-depth+h); ctx.lineTo(cx,y0-depth+h*2); ctx.lineTo(cx-w,y0-depth+h); ctx.closePath();
+    ctx.fillStyle=`rgba(255,80,10,${0.04*alpha})`; ctx.fill(); ctx.strokeStyle=`rgba(255,65,0,${alpha*0.9})`; ctx.lineWidth=0.7; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-w,y0-depth+h); ctx.lineTo(cx,y0-depth+h*2); ctx.lineTo(cx,y0-depth+h*2+depth); ctx.lineTo(cx-w,y0-depth+h+depth); ctx.closePath();
+    ctx.fillStyle=`rgba(100,10,0,${0.04*alpha})`; ctx.fill(); ctx.strokeStyle=`rgba(180,30,0,${alpha*0.55})`; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+w,y0-depth+h); ctx.lineTo(cx,y0-depth+h*2); ctx.lineTo(cx,y0-depth+h*2+depth); ctx.lineTo(cx+w,y0-depth+h+depth); ctx.closePath();
+    ctx.fillStyle=`rgba(60,5,0,${0.04*alpha})`; ctx.fill(); ctx.strokeStyle=`rgba(130,20,0,${alpha*0.4})`; ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ── Draw an AI-zone cube (gold if isAI, dim-red otherwise) ── */
+  function drawAI(cx, cy, cs, depth, isAI, alpha, goldOnly) {
+    if (goldOnly && !isAI) return; // trigger mode: only gold letter cubes
+    const h   = cs * ISO_Y, w = cs * ISO_X;
+    const bob = Math.sin(Date.now() * 0.001 + (cx + cy) * 0.012) * (isAI ? 5 : 2) * (0.3 + alpha * 0.7);
+    const y0  = cy - bob;
+    ctx.save();
+
+    if (isAI) {
+      /* GOLD letter cubes — bright amber/yellow */
+      const g = 0.72 + alpha * 0.28;
+      // top
+      ctx.beginPath();
+      ctx.moveTo(cx, y0-depth); ctx.lineTo(cx+w, y0-depth+h);
+      ctx.lineTo(cx, y0-depth+h*2); ctx.lineTo(cx-w, y0-depth+h);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(255,185,0,${0.22 + alpha * 0.3})`;  ctx.fill();
+      ctx.strokeStyle = `rgba(255,222,0,${g})`;  ctx.lineWidth = 1.3;  ctx.stroke();
+      // left
+      ctx.beginPath();
+      ctx.moveTo(cx-w, y0-depth+h); ctx.lineTo(cx, y0-depth+h*2);
+      ctx.lineTo(cx, y0-depth+h*2+depth); ctx.lineTo(cx-w, y0-depth+h+depth);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(160,70,0,${0.3 + alpha * 0.2})`;    ctx.fill();
+      ctx.strokeStyle = `rgba(255,140,0,${0.55 + alpha * 0.35})`; ctx.stroke();
+      // right
+      ctx.beginPath();
+      ctx.moveTo(cx+w, y0-depth+h); ctx.lineTo(cx, y0-depth+h*2);
+      ctx.lineTo(cx, y0-depth+h*2+depth); ctx.lineTo(cx+w, y0-depth+h+depth);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(100,35,0,${0.33 + alpha * 0.18})`;  ctx.fill();
+      ctx.strokeStyle = `rgba(200,100,0,${0.45 + alpha * 0.3})`;  ctx.stroke();
+      ctx.shadowColor = `rgba(255,200,0,${alpha * 0.7})`; ctx.shadowBlur = 12 + alpha * 22;
+
+    } else {
+      /* DIM red filler cubes — very subtle */
+      const b = alpha * 0.45;
+      // top
+      ctx.beginPath();
+      ctx.moveTo(cx, y0-depth); ctx.lineTo(cx+w, y0-depth+h);
+      ctx.lineTo(cx, y0-depth+h*2); ctx.lineTo(cx-w, y0-depth+h);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(140,12,0,${0.03 + b * 0.08})`; ctx.fill();
+      ctx.strokeStyle = `rgba(255,50,0,${b})`;                ctx.lineWidth = 0.6; ctx.stroke();
+      // left
+      ctx.beginPath();
+      ctx.moveTo(cx-w, y0-depth+h); ctx.lineTo(cx, y0-depth+h*2);
+      ctx.lineTo(cx, y0-depth+h*2+depth); ctx.lineTo(cx-w, y0-depth+h+depth);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(70,5,0,${0.03 + b * 0.06})`;   ctx.fill();
+      ctx.strokeStyle = `rgba(180,30,0,${b * 0.65})`;         ctx.stroke();
+      // right
+      ctx.beginPath();
+      ctx.moveTo(cx+w, y0-depth+h); ctx.lineTo(cx, y0-depth+h*2);
+      ctx.lineTo(cx, y0-depth+h*2+depth); ctx.lineTo(cx+w, y0-depth+h+depth);
+      ctx.closePath();
+      ctx.fillStyle   = `rgba(40,3,0,${0.03 + b * 0.05})`;   ctx.fill();
+      ctx.strokeStyle = `rgba(130,20,0,${b * 0.48})`;         ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* ── Main render loop ── */
+  function draw() {
+    /* Deep navy background */
+    const bg = ctx.createRadialGradient(W*0.5, H*0.45, 0, W*0.5, H*0.45, W*0.75);
+    bg.addColorStop(0,    'rgba(3,18,38,1)');
+    bg.addColorStop(0.45, 'rgba(2,10,24,1)');
+    bg.addColorStop(1,    'rgba(1,5,14,1)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    /* Dust particles */
+    for (const d of DUST) {
+      d.y -= d.s;
+      if (d.y < 0) d.y = 1;
+      ctx.beginPath();
+      ctx.arc(d.x * W, d.y * H, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = d.warm
+        ? `rgba(255,${90 + Math.floor(d.a * 200)},0,${d.a})`
+        : `rgba(255,255,255,${d.a * 0.5})`;
+      ctx.fill();
+    }
+
+    /* ── PLAIN PROXIMITY GRID — boxes appear near mouse cursor ── */
+    const tstX = TCS * ISO_X + TGAP * 0.45;
+    const tstY = TCS * ISO_Y + TGAP * 0.22;
+    const tox = W / 2, toy = 80;
+    const topCells = [];
+    for (let r = 0; r < TROWS; r++) {
+      for (let c = 0; c < TCOLS; c++) {
+        const sx = tox + (c - r) * tstX;
+        const sy = toy + (c + r) * tstY;
+        const dist  = Math.hypot(mouse.x - sx, mouse.y - sy);
+        const alpha = mouseActive ? Math.max(0, 1 - dist / TPROX) : 0;
+        topCells.push({ sx, sy, alpha, order: r + c });
+      }
+    }
+    topCells.sort((a, b) => a.order - b.order);
+    topCells.forEach(c => { if (c.alpha > 0.008) drawPlain(c.sx, c.sy, TCS, TDEPTH, c.alpha); });
+
+    /* Smooth fade in/out based on trigger hover */
+    aiAlphaScale += ((triggerHovered ? 1 : 0) - aiAlphaScale) * 0.07;
+    aiAlphaScale = Math.max(0, Math.min(1, aiAlphaScale));
+
+    /* ── AI GRID — only rendered when trigger box is hovered, gold cubes only ── */
+    if (aiAlphaScale > 0.005) {
+      const astX = ACS * ISO_X + AGAP * 0.45;
+      const astY = ACS * ISO_Y + AGAP * 0.22;
+      const aox  = W / 2;
+      const aoy  = H * 0.18;
+
+      const aiCells = [];
+      for (let r = 0; r < AROWS; r++) {
+        for (let c = 0; c < ACOLS; c++) {
+          const sx = aox + (c - r) * astX;
+          const sy = aoy + (c + r) * astY;
+          aiCells.push({ sx, sy, isAI: AI_GRID[r][c] === 1, order: r + c });
+        }
+      }
+      aiCells.sort((a, b) => a.order - b.order);
+      aiCells.forEach(c => drawAI(c.sx, c.sy, ACS, ADEPTH, c.isAI, aiAlphaScale, true));
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ════════════════════════════════════════
+   SCROLL REVEAL
+════════════════════════════════════════ */
+const revEls = document.querySelectorAll('.reveal');
+const revObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+revEls.forEach(el => revObs.observe(el));
+
+/* ════════════════════════════════════════
+   SOCIAL MARQUEE
+════════════════════════════════════════ */
+const SOCIALS = [
+  {
+    n: 'GitHub',
+    u: 'https://github.com/nakkatrivikram299-prog',
+    s: `<svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>`
+  },
+  {
+    n: 'LinkedIn',
+    u: 'https://www.linkedin.com/in/trivikram-ai',
+    s: `<svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>`
+  },
+  {
+    n: 'X / Twitter',
+    u: 'https://x.com/NakkaTrivikram',
+    s: `<svg viewBox="0 0 24 24" fill="white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.75l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`
+  },
+  {
+    n: 'Credly',
+    u: 'https://www.credly.com/users/nakka-trivikram/badges',
+    s: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#FF6B00"/><text x="12" y="16.5" text-anchor="middle" fill="white" font-size="9.5" font-family="Georgia,serif" font-style="italic" font-weight="bold">Cr</text></svg>`
+  },
+  {
+    n: 'Kaggle',
+    u: 'https://www.kaggle.com/nakkatrivikram',
+    s: `<svg viewBox="0 0 24 24" fill="#20BEFF"><path d="M18.825 23.859c-.022.092-.117.141-.281.141h-3.139c-.187 0-.351-.082-.492-.248l-5.178-6.589-1.448 1.374v5.111c0 .235-.117.352-.351.352H5.505c-.236 0-.354-.117-.354-.352V.353c0-.235.118-.353.354-.353h2.431c.234 0 .351.118.351.353v14.343l6.203-6.272c.165-.165.33-.246.495-.246h3.239c.144 0 .236.06.285.18.046.149.034.255-.036.315l-6.555 6.344 6.836 8.507c.095.104.117.207.07.334z"/></svg>`
+  },
+  {
+    n: 'HackerRank',
+    u: 'https://www.hackerrank.com/profile/nakkatrivikram21',
+    s: `<svg viewBox="0 0 24 24" fill="#2EC866"><path d="M12 0c1.285 0 9.75 4.886 10.392 6 .645 1.115.645 10.885 0 12S13.287 24 12 24C10.712 24 2.25 19.114 1.608 18 .964 16.886.964 7.116 1.608 6 2.25 4.886 10.715 0 12 0zm2.295 6.799c-.141 0-.258.115-.258.258v3.875H9.963V7.057a.258.258 0 00-.258-.258H8.14a.258.258 0 00-.258.258v9.887c0 .141.115.257.258.257h1.565c.141 0 .258-.115.258-.257v-4.044h4.074v4.044c0 .141.115.257.258.257h1.566c.141 0 .256-.115.256-.257V7.057a.255.255 0 00-.256-.258h-1.566z"/></svg>`
+  },
+  {
+    n: 'Devpost',
+    u: 'https://devpost.com/nakkatrivikram299',
+    s: `<svg viewBox="0 0 24 24"><path d="M6.002 1.61L0 12.004 6.002 22.39h11.996L24 12.004 17.998 1.61zm1.593 4.084h3.947c3.605 0 6.276 1.8 6.276 6.31 0 4.51-2.67 6.31-6.276 6.31H7.595zm2.386 2.646v7.328h1.56c2.338 0 3.844-1.262 3.844-3.664 0-2.401-1.506-3.664-3.844-3.664z" fill="#003E54"/></svg>`
+  }
+];
+
+const track = document.getElementById('soc-track');
+// Duplicate for seamless infinite scroll
+const allItems = [...SOCIALS, ...SOCIALS];
+track.innerHTML = allItems.map(s =>
+  `<a class="soc-link" href="${s.u}" target="_blank" rel="noopener noreferrer" title="${s.n}">${s.s}<span>${s.n}</span></a>`
+).join('');
+</script>
+</body>
+</html>
+
