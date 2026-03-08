@@ -6,7 +6,7 @@
 
 ## 🌐 Live Demo
 
-Hosted on Netlify → [your-site-name.netlify.app](https://your-site-name.netlify.app)
+Hosted By Myself → https://nakkatrivikram299-prog.github.io/Trivikram-N-portfolio/
 
 ---
 
